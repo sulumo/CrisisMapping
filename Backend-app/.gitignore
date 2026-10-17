@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Environment
+.env
+venv/
+.venv/
+
+# AI model weights — too large for GitHub, place manually on server
+app/ai_core/best.pt
+ai_weights/
+
+# Database
+*.db
+test_crisis.db
+
+# Uploaded images — runtime data, not source code
+app/static/image/*
+!app/static/image/.gitkeep
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db

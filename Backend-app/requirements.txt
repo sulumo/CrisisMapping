@@ -1,0 +1,21 @@
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9      # required for File() / Form() uploads
+
+# ── Database ───────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.30
+geoalchemy2==0.15.1
+psycopg2-binary==2.9.9       # PostgreSQL driver
+
+# ── AI / ML ────────────────────────────────────────────────────────────────────
+# Pinned to match CUDA 11.8 on the deployment server (Dockerfile base image).
+# Update together if you upgrade the base image.
+torch==2.1.2
+torchvision==0.16.2
+transformers==4.40.0         # upgraded from 4.24 — CLIPProcessor API is stable here
+pillow==10.3.0               # upgraded from 8.4 — security fixes
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+timm==0.9.16
+scikit-learn>=1.2.0

@@ -1,0 +1,69 @@
+services:
+
+  # ── 1. FastAPI backend ───────────────────────────────────────────────────────
+  backend:
+    build: .
+    container_name: crisis_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+      - ./ai_weights:/root/.cache/huggingface   # cache downloaded CLIP weights
+      - ./app/static/image:/code/app/static/image
+      # Mount the weights file directly — map host path to the path service.py expects
+      - ./app/ai_core/best.pt:/code/app/ai_core/best.pt
+    environment:
+      # Database connection
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - DB_HOST=db               # Docker service name — overrides the default
+      - DB_PORT=5432
+
+      # AI model selection:
+      #   baseline  → CLIP_CrisisKAN_Baseline  (uses baseline/best.pt)
+      #   multilayer  → CLIP_CrisisKAN_TCG       (uses multilayer/best.pt)
+      - MODEL_VARIANT=multilayer
+      - MODEL_WEIGHTS_PATH=app/ai_core/best.pt
+
+    depends_on:
+      - db
+
+    # ── GPU passthrough ──────────────────────────────────────────────────────
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+
+  # ── 2. PostGIS database ───────────────────────────────────────────────────────
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: crisis_db
+    restart: always
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ── 3. pgAdmin database viewer ───────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: crisis_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
